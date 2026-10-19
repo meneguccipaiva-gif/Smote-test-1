@@ -1,9 +1,12 @@
 import { useState } from 'react'
 import { formatFirstName } from '../engine/answers'
 import { isValidPhone, maskPhone, onlyDigits } from '../engine/phone'
+import { Icon } from './Icon'
+import { Title } from './Title'
 
 type Props = {
   title: string
+  emphasis?: string
   subtitle: string
   cta: string
   name?: string
@@ -13,7 +16,7 @@ type Props = {
 
 const NAME_PATTERN = /^[A-Za-zÀ-ÖØ-öø-ÿ]{2,}(?:[ '-][A-Za-zÀ-ÖØ-öø-ÿ]+)?$/
 
-export function NameCapture({ title, subtitle, cta, name: initialName, phone: initialPhone, onContinue }: Props) {
+export function NameCapture({ title, emphasis, subtitle, cta, name: initialName, phone: initialPhone, onContinue }: Props) {
   const [name, setName] = useState(initialName ?? '')
   const [phone, setPhone] = useState(initialPhone ? maskPhone(initialPhone) : '')
   const [error, setError] = useState('')
@@ -36,7 +39,7 @@ export function NameCapture({ title, subtitle, cta, name: initialName, phone: in
   return (
     <section className="screen">
       <div className="screen-body">
-        <h1>{title}</h1>
+        <Title text={title} emphasis={emphasis} />
         <p className="subtitle">{subtitle}</p>
         <label className="field">
           <span className="field-label">Primeiro nome</span>
@@ -70,6 +73,13 @@ export function NameCapture({ title, subtitle, cta, name: initialName, phone: in
             }}
           />
         </label>
+        <aside className="reassure">
+          <p className="reassure-title">
+            <Icon name="lock" size={18} />
+            Pedimos seu nome e WhatsApp para entregar o plano
+          </p>
+          <p>Sem e-mail e sem senha. O aviso do seu acesso chega direto no WhatsApp.</p>
+        </aside>
         {error && (
           <p className="error" role="alert">
             {error}

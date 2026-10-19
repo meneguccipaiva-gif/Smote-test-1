@@ -28,7 +28,7 @@ export function OfferPage({ compare, offer, profile, answers, onBuy }: Props) {
         <section>
           <h1>{compare.title}</h1>
           <div className="compare">
-            <article>
+            <article className="is-now">
               <img src={compare.beforeImage} alt="" />
               <h2>{compare.nowLabel}</h2>
               <p className="compare-value">{fill(compare.nowValue, vars)}</p>

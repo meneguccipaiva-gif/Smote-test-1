@@ -13,12 +13,10 @@ export function ProfileCard({ image, cta, profile, onNext }: Props) {
   return (
     <section className="screen">
       <div className="screen-body">
-        <img className="hero" src={image} alt="" />
-        <p className="kicker">Seu perfil</p>
-        <h1>{profile.nivel}</h1>
+        <h1>O seu perfil</h1>
         <div className="level" aria-label={`${profile.percentual}% de ${profile.nivel}`}>
           <div className="level-track">
-            <span style={{ width: `${profile.percentual}%` }} />
+            <span className="level-knob" style={{ left: `${profile.percentual}%` }} />
           </div>
           <div className="level-labels">
             {levels.map((label) => (
@@ -26,15 +24,21 @@ export function ProfileCard({ image, cta, profile, onNext }: Props) {
             ))}
           </div>
         </div>
-        <p className="reading">{profile.leitura}</p>
-        <dl className="summary">
-          {profile.card.map((row) => (
-            <div key={row.label}>
-              <dt>{row.label}</dt>
-              <dd>{row.value}</dd>
-            </div>
-          ))}
-        </dl>
+        <p className="reading-card">
+          <strong>{profile.nivel}</strong>
+          {profile.leitura}
+        </p>
+        <div className="summary-card">
+          <dl className="summary">
+            {profile.card.map((row) => (
+              <div key={row.label}>
+                <dt>{row.label}</dt>
+                <dd>{row.value}</dd>
+              </div>
+            ))}
+          </dl>
+          <img className="summary-photo" src={image} alt="" />
+        </div>
       </div>
       <div className="dock">
         <button type="button" className="btn" onClick={onNext}>

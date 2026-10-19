@@ -7,16 +7,17 @@ type Props = {
 export function ProgressHeader({ canBack, onBack, progress }: Props) {
   return (
     <header className="topbar">
-      {canBack ? (
-        <button type="button" className="back" onClick={onBack}>
-          <span aria-hidden="true">←</span>
-          Voltar
-        </button>
-      ) : (
-        <span className="back is-reserved" aria-hidden="true">
-          Voltar
-        </span>
-      )}
+      <div className="topbar-row">
+        {canBack ? (
+          <button type="button" className="back" onClick={onBack} aria-label="Voltar">
+            <span aria-hidden="true">←</span>
+          </button>
+        ) : (
+          <span className="back is-reserved" aria-hidden="true" />
+        )}
+        <img className="brand-logo" src="/brand/clube-antenados.png" alt="Clube de Antenados" />
+        <span className="back is-reserved" aria-hidden="true" />
+      </div>
       {progress != null && (
         <div
           className="progress"

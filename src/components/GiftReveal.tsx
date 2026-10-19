@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { PRICE } from '../content/price'
 
 type Props = {
@@ -7,43 +7,104 @@ type Props = {
   onNext: () => void
 }
 
+type Phase = 'idle' | 'opening' | 'handoff' | 'shown'
+
+const LID_MS = 560
+const FADE_MS = 520
+
 export function GiftReveal({ open, onOpen, onNext }: Props) {
-  const [opening, setOpening] = useState(false)
+  const [phase, setPhase] = useState<Phase>(open ? 'shown' : 'idle')
   const onOpenRef = useRef(onOpen)
+  const percentRef = useRef<HTMLElement>(null)
+  const captionRef = useRef<HTMLElement>(null)
+  const showGift = phase === 'idle' || phase === 'opening' || phase === 'handoff'
+  const showBadge = phase === 'handoff' || phase === 'shown'
 
   useEffect(() => {
     onOpenRef.current = onOpen
   })
 
+  useLayoutEffect(() => {
+    if (!showBadge) return
+    const percent = percentRef.current
+    const caption = captionRef.current
+    if (!percent || !caption) return
+
+    function fit() {
+      if (!percent || !caption) return
+      const target = caption.offsetWidth
+      let low = 24
+      let high = 180
+      for (let pass = 0; pass < 14; pass += 1) {
+        const mid = (low + high) / 2
+        percent.style.fontSize = `${mid}px`
+        if (percent.offsetWidth < target) low = mid
+        else high = mid
+      }
+      percent.style.fontSize = `${low}px`
+    }
+
+    fit()
+    let cancel = false
+    document.fonts.ready.then(() => {
+      if (!cancel) fit()
+    })
+    return () => {
+      cancel = true
+    }
+  }, [showBadge])
+
   useEffect(() => {
-    if (!opening) return
-    const timer = window.setTimeout(() => onOpenRef.current(), 560)
+    if (phase !== 'opening') return
+    const timer = window.setTimeout(() => setPhase('handoff'), LID_MS)
     return () => window.clearTimeout(timer)
-  }, [opening])
+  }, [phase])
+
+  useEffect(() => {
+    if (phase !== 'handoff') return
+    const timer = window.setTimeout(() => {
+      onOpenRef.current()
+      setPhase('shown')
+    }, FADE_MS)
+    return () => window.clearTimeout(timer)
+  }, [phase])
 
   return (
     <section className="screen">
       <div className="screen-body center-copy">
-        <h1>{open ? 'Seu desconto foi liberado' : 'Tem um presente para você'}</h1>
-        <p className="subtitle">
-          {open
-            ? 'A condição promocional deste diagnóstico já está aplicada.'
-            : 'Toque na caixa abaixo para abrir seu presente exclusivo.'}
-        </p>
-        {open ? (
-          <div className="gift-badge" aria-live="polite">
-            <strong>{PRICE.percent}%</strong>
-            <span>de desconto liberado</span>
-          </div>
-        ) : (
-          <button type="button" className="gift-box" onClick={() => setOpening(true)} disabled={opening}>
-            <GiftBox open={opening} />
-            <span>Abrir presente</span>
-          </button>
-        )}
+        <div className="gift-stage">
+          {showGift && (
+            <div className={phase === 'handoff' ? 'gift-layer is-out' : 'gift-layer'}>
+              <h1>Tem um presente para você</h1>
+              <p className="subtitle">Toque na caixa abaixo para abrir seu presente exclusivo.</p>
+              <button
+                type="button"
+                className="gift-box"
+                onClick={() => setPhase('opening')}
+                disabled={phase !== 'idle'}
+              >
+                <GiftBox open={phase !== 'idle'} />
+                <span>Abrir presente</span>
+              </button>
+            </div>
+          )}
+          {showBadge && (
+            <div className={phase === 'handoff' ? 'gift-layer is-in' : 'gift-layer'}>
+              <h1>Seu desconto foi liberado</h1>
+              <p className="subtitle">A condição promocional deste diagnóstico já está aplicada.</p>
+              <div
+                className={phase === 'handoff' ? 'gift-badge is-in' : 'gift-badge'}
+                aria-live="polite"
+              >
+                <strong ref={percentRef}>{PRICE.percent}%</strong>
+                <span ref={captionRef}>de desconto liberado</span>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-      {open && (
-        <div className="dock">
+      {showBadge && (
+        <div className={phase === 'handoff' ? 'dock is-in' : 'dock'}>
           <button type="button" className="btn" onClick={onNext}>
             Resgatar meu plano com desconto
           </button>

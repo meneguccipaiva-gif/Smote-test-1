@@ -3,6 +3,7 @@ import { asString } from '../engine/answers'
 import { submitLead } from '../engine/leads'
 import { quizEventParams, trackQuiz } from '../engine/pixel'
 import { PRICE } from '../content/price'
+import { resultImage } from '../content/resultImage'
 import { loadSession, saveSession } from '../engine/session'
 import type { QuizDefinition, SessionState } from '../types'
 import { GiftReveal } from './GiftReveal'
@@ -19,6 +20,7 @@ import { SingleChoice } from './SingleChoice'
 import { Waitlist } from './Waitlist'
 
 const questionTypes = new Set(['single', 'multi', 'name'])
+const RING_MS = 1400
 
 type Props = {
   quiz: QuizDefinition
@@ -26,6 +28,7 @@ type Props = {
 
 export function QuizRunner({ quiz }: Props) {
   const [state, setState] = useState<SessionState>(() => loadSession(quiz.id, quiz.screens.length))
+  const [ringFor, setRingFor] = useState<string | null>(null)
 
   useEffect(() => {
     saveSession(quiz.id, state)
@@ -38,11 +41,8 @@ export function QuizRunner({ quiz }: Props) {
     .slice(0, state.step)
     .filter((item) => questionTypes.has(item.type)).length
   const progress = questionTotal === 0 ? 0 : Math.round((completed / questionTotal) * 100)
-  const hideBar =
-    state.waitlist ||
-    screen.type === 'loader' ||
-    screen.type === 'gift' ||
-    screen.type === 'offer'
+  const showBar =
+    !state.waitlist && state.step > 0 && (screen.type === 'single' || screen.type === 'multi')
   const faixa = asString(state.answers, 'faixa_etaria')
 
   useEffect(() => {
@@ -54,7 +54,15 @@ export function QuizRunner({ quiz }: Props) {
     if (screen.type === 'offer' && !state.waitlist) trackQuiz(quiz.id, 'OfertaVista', params, { custom: true })
   }, [faixa, progress, quiz, screen.type, state.giftOpen, state.waitlist])
 
+  useEffect(() => {
+    if (!ringFor) return
+    const timer = window.setTimeout(() => setRingFor(null), RING_MS)
+    return () => window.clearTimeout(timer)
+  }, [ringFor])
+
   function goNext() {
+    const next = quiz.screens[Math.min(state.step + 1, quiz.screens.length - 1)]
+    setRingFor(next?.type === 'meter' ? next.id : null)
     setState((current) => ({
       ...current,
       step: Math.min(current.step + 1, quiz.screens.length - 1),
@@ -62,6 +70,7 @@ export function QuizRunner({ quiz }: Props) {
   }
 
   function goBack() {
+    setRingFor(null)
     setState((current) => {
       if (current.waitlist) return { ...current, waitlist: false }
       return { ...current, step: Math.max(0, current.step - 1) }
@@ -109,7 +118,7 @@ export function QuizRunner({ quiz }: Props) {
         <ProgressHeader
           canBack={state.step > 0 || state.waitlist}
           onBack={goBack}
-          progress={hideBar ? null : progress}
+          progress={showBar ? progress : null}
         />
         <div className="stage" key={state.waitlist ? 'lista' : screen.id}>
           {state.waitlist ? (
@@ -133,9 +142,9 @@ export function QuizRunner({ quiz }: Props) {
       return (
         <SingleChoice
           title={screen.title}
+          emphasis={screen.emphasis}
           subtitle={screen.subtitle}
           note={screen.note}
-          layout={screen.layout}
           options={screen.options}
           value={saved || undefined}
           onSelect={(value) => setAnswer(screen.id, value)}
@@ -149,7 +158,10 @@ export function QuizRunner({ quiz }: Props) {
       return (
         <MultiChoice
           title={screen.title}
+          emphasis={screen.emphasis}
           subtitle={screen.subtitle}
+          layout={screen.layout}
+          skipLabel={screen.skipLabel}
           options={screen.options}
           initial={screen.initial}
           value={Array.isArray(saved) ? saved : undefined}
@@ -167,6 +179,7 @@ export function QuizRunner({ quiz }: Props) {
           icon={screen.icon}
           kicker={screen.kicker}
           title={screen.title}
+          emphasis={screen.emphasis}
           paragraphs={screen.paragraphs}
           image={screen.image}
           onNext={goNext}
@@ -174,12 +187,26 @@ export function QuizRunner({ quiz }: Props) {
       )
     }
 
+    if (screen.type === 'meter' && ringFor === screen.id) {
+      const line = profile.loaderLines[0]?.replace(/\.\.\.$/, '...') ?? 'Analisando as suas respostas...'
+      return (
+        <section className="screen">
+          <div className="screen-body loader-intro">
+            <div className="ring" aria-hidden="true" />
+            <h1>{line}</h1>
+          </div>
+        </section>
+      )
+    }
+
     if (screen.type === 'meter') {
       return (
         <ResultMeter
           title={screen.title}
+          emphasis={screen.emphasis}
           body={screen.body}
           cta={screen.cta}
+          image={resultImage(quiz.id, profile.nivel)}
           profile={profile}
           onNext={goNext}
         />
@@ -187,13 +214,21 @@ export function QuizRunner({ quiz }: Props) {
     }
 
     if (screen.type === 'profile') {
-      return <ProfileCard image={screen.image} cta={screen.cta} profile={profile} onNext={goNext} />
+      return (
+        <ProfileCard
+          image={resultImage(quiz.id, profile.nivel)}
+          cta={screen.cta}
+          profile={profile}
+          onNext={goNext}
+        />
+      )
     }
 
     if (screen.type === 'method') {
       return (
         <MethodScreen
           title={screen.title}
+          emphasis={screen.emphasis}
           intro={screen.intro}
           image={screen.image}
           steps={screen.steps}
@@ -207,6 +242,7 @@ export function QuizRunner({ quiz }: Props) {
       return (
         <NameCapture
           title={screen.title}
+          emphasis={screen.emphasis}
           subtitle={screen.subtitle}
           cta={screen.cta}
           name={asString(state.answers, 'primeiro_nome')}
@@ -233,6 +269,14 @@ export function QuizRunner({ quiz }: Props) {
           lines={profile.loaderLines}
           question={screen.question}
           answer={asString(state.answers, screen.question.id)}
+          proof={
+            quiz.offer.testimonials[0]
+              ? {
+                  name: `${quiz.offer.testimonials[0].name}, ${quiz.offer.testimonials[0].age} anos`,
+                  text: quiz.offer.testimonials[0].text,
+                }
+              : undefined
+          }
           onAnswer={(value) => setAnswer(screen.question.id, value)}
           onDone={goNext}
         />

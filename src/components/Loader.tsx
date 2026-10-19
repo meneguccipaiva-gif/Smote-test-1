@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Option } from '../types'
 
 type Question = {
@@ -7,16 +7,33 @@ type Question = {
   options: Option[]
 }
 
+type Proof = {
+  name: string
+  text: string
+}
+
 type Props = {
   lines: string[]
   question: Question
   answer?: string
+  proof?: Proof
   onAnswer: (value: string) => void
   onDone: () => void
 }
 
-export function Loader({ lines, question, answer, onAnswer, onDone }: Props) {
+const BAR_MS = 4000
+const WEIGHTS = [0.14, 0.33, 0.18, 0.35]
+
+function barDelays(count: number) {
+  if (count <= 0) return []
+  const weights = Array.from({ length: count }, (_, index) => WEIGHTS[index % WEIGHTS.length])
+  const total = weights.reduce((sum, weight) => sum + weight, 0)
+  return weights.map((weight) => Math.max(280, Math.round((weight / total) * BAR_MS)))
+}
+
+export function Loader({ lines, question, answer, proof, onAnswer, onDone }: Props) {
   const lastIndex = Math.max(0, lines.length - 1)
+  const delays = useMemo(() => barDelays(lines.length), [lines.length])
   const [filled, setFilled] = useState(0)
   const [paused, setPaused] = useState(false)
   const [picked, setPicked] = useState(answer ?? '')
@@ -37,9 +54,9 @@ export function Loader({ lines, question, answer, onAnswer, onDone }: Props) {
       const timer = window.setTimeout(() => setPaused(true), 40)
       return () => window.clearTimeout(timer)
     }
-    const timer = window.setTimeout(() => setFilled((current) => current + 1), 1100)
+    const timer = window.setTimeout(() => setFilled((current) => current + 1), delays[filled] ?? 800)
     return () => window.clearTimeout(timer)
-  }, [filled, lastIndex, lines.length, paused, released])
+  }, [delays, filled, lastIndex, lines.length, paused, released])
 
   function confirm() {
     if (!picked) return
@@ -51,7 +68,7 @@ export function Loader({ lines, question, answer, onAnswer, onDone }: Props) {
   return (
     <section className="screen">
       <div className="screen-body loader">
-        <p className="kicker">Montando o seu plano</p>
+        <h1>Criando o seu plano personalizado...</h1>
         <ul className="loader-list">
           {lines.map((line, index) => {
             const done = index < filled
@@ -60,16 +77,27 @@ export function Loader({ lines, question, answer, onAnswer, onDone }: Props) {
             return (
               <li key={line} className={done ? 'is-done' : undefined}>
                 <p>{line.replace(/\.\.\.$/, '')}</p>
-                <div className={done || filling ? 'loader-bar is-on' : 'loader-bar'}>
+                <div
+                  className={done || filling ? 'loader-bar is-on' : 'loader-bar'}
+                  style={{ ['--bar-ms' as string]: `${delays[index] ?? 800}ms` }}
+                >
                   <span />
                 </div>
               </li>
             )
           })}
         </ul>
-        {paused && (
-          <div className="loader-question">
-            <h1>{question.title}</h1>
+        {proof && (
+          <blockquote className="proof-card">
+            <p>{proof.text}</p>
+            <footer>{proof.name}</footer>
+          </blockquote>
+        )}
+      </div>
+      {paused && (
+        <div className="modal-backdrop">
+          <div className="modal" role="dialog" aria-modal="true" aria-labelledby="loader-question-title">
+            <h1 id="loader-question-title">{question.title}</h1>
             <div className="stack">
               {question.options.map((option) => {
                 const isSelected = picked === option.value
@@ -77,26 +105,22 @@ export function Loader({ lines, question, answer, onAnswer, onDone }: Props) {
                   <button
                     key={option.value}
                     type="button"
-                    className={isSelected ? 'choice is-selected' : 'choice'}
+                    className={isSelected ? 'plain-choice is-selected' : 'plain-choice'}
                     aria-pressed={isSelected}
                     onClick={() => setPicked(option.value)}
                   >
                     <span className="choice-label">{option.label}</span>
-                    <span className="choice-mark" aria-hidden="true">
-                      {isSelected ? '✓' : ''}
+                    <span className="choice-arrow" aria-hidden="true">
+                      →
                     </span>
                   </button>
                 )
               })}
             </div>
+            <button type="button" className="btn" disabled={!picked} onClick={confirm}>
+              Continuar
+            </button>
           </div>
-        )}
-      </div>
-      {paused && (
-        <div className="dock">
-          <button type="button" className="btn" disabled={!picked} onClick={confirm}>
-            Continuar
-          </button>
         </div>
       )}
     </section>

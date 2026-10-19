@@ -33,6 +33,7 @@ export type Screen =
       type: 'single'
       id: string
       title: string
+      emphasis?: string
       subtitle?: string
       note?: string
       layout?: 'stack' | 'devices'
@@ -42,7 +43,10 @@ export type Screen =
       type: 'multi'
       id: string
       title: string
+      emphasis?: string
       subtitle?: string
+      layout?: 'rows' | 'chips'
+      skipLabel?: string
       options: Option[]
       initial?: string[]
     }
@@ -52,6 +56,7 @@ export type Screen =
       icon: IconName
       kicker?: string
       title?: string
+      emphasis?: string
       paragraphs: string[]
       image?: string
     }
@@ -59,6 +64,7 @@ export type Screen =
       type: 'meter'
       id: string
       title: string
+      emphasis?: string
       body: string
       cta: string
     }
@@ -72,6 +78,7 @@ export type Screen =
       type: 'method'
       id: string
       title: string
+      emphasis?: string
       intro: string
       image?: string
       steps: MethodStep[]
@@ -81,6 +88,7 @@ export type Screen =
       type: 'name'
       id: string
       title: string
+      emphasis?: string
       subtitle: string
       cta: string
     }

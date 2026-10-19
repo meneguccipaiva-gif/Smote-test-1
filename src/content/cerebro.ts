@@ -1,5 +1,6 @@
 import { asArray, asString, firstName } from '../engine/answers'
 import type { Answers, Profile, QuizDefinition } from '../types'
+import { ageOptions } from './ages'
 
 const frequenciaBase: Record<string, { percentual: number; nivel: string }> = {
   quase_todo_dia: { percentual: 32, nivel: 'Lapsos quase diários' },
@@ -100,12 +101,7 @@ export const cerebro: QuizDefinition = {
       title: 'Avaliação de Vitalidade Cognitiva e Memória 60+',
       subtitle: 'Selecione a sua faixa de idade para calibrarmos os exercícios do seu perfil.',
       note: 'Ao continuar, você recebe este diagnóstico no seu ritmo.',
-      options: [
-        { value: '40-49', label: '40 a 49 anos' },
-        { value: '50-59', label: '50 a 59 anos' },
-        { value: '60-69', label: '60 a 69 anos' },
-        { value: '70+', label: '70 anos ou mais' },
-      ],
+      options: ageOptions,
     },
     {
       type: 'single',

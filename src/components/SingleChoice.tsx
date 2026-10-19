@@ -1,98 +1,122 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Icon } from './Icon'
+import { Title } from './Title'
 import type { Option } from '../types'
 
 type Props = {
   title: string
+  emphasis?: string
   subtitle?: string
   note?: string
-  layout?: 'stack' | 'devices'
   options: Option[]
   value?: string
   onSelect: (value: string) => void
   onNext: () => void
 }
 
-export function SingleChoice({ title, subtitle, note, layout = 'stack', options, value, onSelect, onNext }: Props) {
+export function SingleChoice({ title, emphasis, subtitle, note, options, value, onSelect, onNext }: Props) {
   const [selected, setSelected] = useState(value ?? '')
-  const pictured = layout === 'devices' ? options.filter((option) => option.image) : []
-  const rest = layout === 'devices' ? options.filter((option) => !option.image) : options
+  const timer = useRef<number | null>(null)
+  const pictured = options.some((option) => option.image)
+
+  useEffect(() => {
+    return () => {
+      if (timer.current != null) window.clearTimeout(timer.current)
+    }
+  }, [])
 
   function choose(next: string) {
+    if (timer.current != null) return
     setSelected(next)
     onSelect(next)
+    timer.current = window.setTimeout(onNext, 500)
   }
 
   return (
     <section className="screen">
       <div className="screen-body">
-        <h1>{title}</h1>
+        <Title text={title} emphasis={emphasis} />
         {subtitle && <p className="subtitle">{subtitle}</p>}
-        {pictured.length > 0 && (
-          <div className="device-grid">
-            {pictured.map((option) => (
-              <DeviceCard
+        {pictured ? (
+          <div className="photo-grid">
+            {options.map((option) => (
+              <PhotoCard
                 key={option.value}
                 option={option}
                 selected={selected === option.value}
+                fill={options.every((item) => item.image)}
                 onChoose={choose}
               />
             ))}
           </div>
-        )}
-        <div className="stack">
-          {rest.map((option) => {
-            const isSelected = selected === option.value
-            return (
-              <button
-                key={option.value}
-                type="button"
-                className={isSelected ? 'choice is-selected' : 'choice'}
-                aria-pressed={isSelected}
-                onClick={() => choose(option.value)}
-              >
-                {option.icon && (
-                  <span className="choice-icon">
-                    <Icon name={option.icon} />
+        ) : (
+          <div className="stack">
+            {options.map((option) => {
+              const isSelected = selected === option.value
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  className={isSelected ? 'plain-choice is-selected' : 'plain-choice'}
+                  aria-pressed={isSelected}
+                  onClick={() => choose(option.value)}
+                >
+                  {option.icon && (
+                    <span className="choice-emoji">
+                      <Icon name={option.icon} size={28} />
+                    </span>
+                  )}
+                  <span className="choice-label">{option.label}</span>
+                  <span className="choice-arrow" aria-hidden="true">
+                    →
                   </span>
-                )}
-                <span className="choice-label">{option.label}</span>
-                <span className="choice-mark" aria-hidden="true">
-                  {isSelected ? '✓' : ''}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-        {note && <p className="legal">{note}</p>}
+                </button>
+              )
+            })}
+          </div>
+        )}
       </div>
-      <div className="dock">
-        <button type="button" className="btn" disabled={!selected} onClick={onNext}>
-          Continuar
-        </button>
-      </div>
+      {note && <p className="legal">{note}</p>}
     </section>
   )
 }
 
-function DeviceCard({
+function PhotoCard({
   option,
   selected,
+  fill,
   onChoose,
 }: {
   option: Option
   selected: boolean
+  fill: boolean
   onChoose: (value: string) => void
 }) {
+  const wide = !option.image
   return (
     <button
       type="button"
-      className={selected ? 'device-card is-selected' : 'device-card'}
+      className={['photo-card', wide ? 'is-wide' : '', selected ? 'is-selected' : ''].filter(Boolean).join(' ')}
       aria-pressed={selected}
       onClick={() => onChoose(option.value)}
     >
-      <img src={option.image} alt="" />
-      <span>{option.label}</span>
+      {option.image ? (
+        <>
+          <span className={fill ? 'photo-face is-cover' : 'photo-face'}>
+            <img src={option.image} alt="" />
+          </span>
+          <span className="photo-caption">
+            <span>{option.label}</span>
+            <span aria-hidden="true">→</span>
+          </span>
+        </>
+      ) : (
+        <span className="photo-plain">
+          {option.icon && <Icon name={option.icon} size={24} />}
+          <span>{option.label}</span>
+          <span aria-hidden="true">→</span>
+        </span>
+      )}
     </button>
   )
 }
