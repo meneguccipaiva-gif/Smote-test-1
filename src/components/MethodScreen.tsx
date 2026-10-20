@@ -28,7 +28,7 @@ export function MethodScreen({
 }: Props) {
   return (
     <section className="screen">
-      <div className="screen-body">
+      <div className="screen-body is-scrollable">
         {image && <img className="hero" src={image} alt="" />}
         <p className="kicker">{kicker}</p>
         <Title text={title} emphasis={emphasis} />
