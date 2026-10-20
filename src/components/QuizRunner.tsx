@@ -53,7 +53,9 @@ export function QuizRunner({ quiz }: Props) {
     if (progress >= 50) trackQuiz(quiz.id, 'QuizMeio', params, { custom: true })
     if (screen.type === 'profile') trackQuiz(quiz.id, 'QuizConcluido', params, { custom: true })
     if (screen.type === 'method') trackQuiz(quiz.id, 'MetodoVista', params, { custom: true })
-    if (screen.type === 'name') trackQuiz(quiz.id, 'FormWhatsappVista', params, { custom: true })
+    if (screen.type === 'name' && (screen.fields ?? 'both') !== 'name') {
+      trackQuiz(quiz.id, 'FormWhatsappVista', params, { custom: true })
+    }
     if (state.giftOpen) trackQuiz(quiz.id, 'PresenteAberto', params, { custom: true })
     if (screen.type === 'offer' && !state.waitlist) trackQuiz(quiz.id, 'OfertaVista', params, { custom: true })
   }, [faixa, progress, quiz, screen.type, state.giftOpen, state.waitlist])
@@ -157,9 +159,14 @@ export function QuizRunner({ quiz }: Props) {
       return (
         <CoverScreen
           promise={screen.promise}
+          emphasis={screen.emphasis}
           cta={screen.cta}
           video={screen.video}
           poster={screen.poster}
+          kicker={screen.kicker}
+          subtitle={screen.subtitle}
+          fine={screen.fine}
+          seals={screen.seals}
           onStart={goNext}
         />
       )
@@ -272,28 +279,40 @@ export function QuizRunner({ quiz }: Props) {
     }
 
     if (screen.type === 'name') {
+      const fields = screen.fields ?? 'both'
       return (
         <NameCapture
           title={screen.title}
           emphasis={screen.emphasis}
           subtitle={screen.subtitle}
           cta={screen.cta}
+          fields={fields}
           name={asString(state.answers, 'primeiro_nome')}
           phone={asString(state.answers, 'whatsapp')}
           onValidationError={() => {
-            trackQuiz(quiz.id, 'FormWhatsappErro', quizEventParams(quiz, faixa || undefined), {
-              custom: true,
-            })
+            if (fields !== 'name') {
+              trackQuiz(quiz.id, 'FormWhatsappErro', quizEventParams(quiz, faixa || undefined), {
+                custom: true,
+              })
+            }
           }}
           onContinue={(nome, whatsapp) => {
-            trackQuiz(
-              quiz.id,
-              'CompleteRegistration',
-              quizEventParams(quiz, asString(state.answers, 'faixa_etaria') || undefined),
+            const params = quizEventParams(
+              quiz,
+              asString(state.answers, 'faixa_etaria') || undefined,
             )
+            if (fields === 'name') {
+              trackQuiz(quiz.id, 'NomeInformado', params, { custom: true })
+            } else {
+              trackQuiz(quiz.id, 'CompleteRegistration', params)
+            }
+            const openWaitlist = fields === 'phone'
             setState((current) => ({
               ...current,
-              step: Math.min(current.step + 1, quiz.screens.length - 1),
+              step: openWaitlist
+                ? current.step
+                : Math.min(current.step + 1, quiz.screens.length - 1),
+              waitlist: openWaitlist ? true : current.waitlist,
               answers: { ...current.answers, primeiro_nome: nome, whatsapp },
             }))
           }}
@@ -348,6 +367,11 @@ export function QuizRunner({ quiz }: Props) {
             value: PRICE.to,
             currency: 'BRL',
           })
+          const next = quiz.screens[state.step + 1]
+          if (next?.type === 'name') {
+            goNext()
+            return
+          }
           setState((current) => ({ ...current, waitlist: true }))
         }}
       />

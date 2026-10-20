@@ -33,9 +33,14 @@ export type Screen =
       type: 'cover'
       id: string
       promise: string
+      emphasis?: string
       cta: string
       video: string
       poster?: string
+      kicker?: string
+      subtitle?: string
+      fine?: string
+      seals?: { icon: IconName; label: string }[]
     }
   | {
       type: 'single'
@@ -101,6 +106,7 @@ export type Screen =
       emphasis?: string
       subtitle: string
       cta: string
+      fields?: 'name' | 'phone' | 'both'
     }
   | {
       type: 'loader'

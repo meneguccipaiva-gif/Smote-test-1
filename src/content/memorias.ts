@@ -94,16 +94,26 @@ export const memorias: QuizDefinition = {
   id: 'memorias',
   path: 'memorias',
   name: 'Memórias Vivas',
-  promise: 'Aprenda a restaurar suas fotos antigas',
+  promise: 'Traga de volta o olhar de quem você ama',
   buildProfile,
   screens: [
     {
       type: 'cover',
       id: 'capa',
-      promise: 'Aprenda a restaurar suas fotos antigas',
-      cta: 'Começar diagnóstico do acervo',
+      kicker: 'Clube de Antenados',
+      promise: 'Traga de volta o olhar de quem você ama',
+      emphasis: 'olhar',
+      subtitle:
+        'Em poucos toques, montamos o seu passo a passo para restaurar as fotos direto no WhatsApp — sem app novo.',
+      cta: 'Começar meu resgate de memórias',
+      fine: 'É um diagnóstico rápido. Depois você recebe o guia.',
       video: '/memorias/thumb.mp4',
       poster: '/memorias/transform-familia-color.jpg',
+      seals: [
+        { icon: 'bolt', label: 'Rápido e prático' },
+        { icon: 'shield', label: 'Seguro e confiável' },
+        { icon: 'phone', label: 'Direto no WhatsApp' },
+      ],
     },
     {
       type: 'single',
@@ -113,7 +123,7 @@ export const memorias: QuizDefinition = {
       options: [
         {
           value: 'albuns',
-          label: 'Álbuns de papel',
+          label: 'Álbuns antigos',
           image: '/memorias/acervo-albuns.jpg',
         },
         {
@@ -252,15 +262,16 @@ export const memorias: QuizDefinition = {
       productTitle: 'Desconto liberado no Guia Memórias Vivas + vídeo-aula',
       productBody:
         'PDF em letras grandes e aula gravada na tela do celular, para você restaurar as fotos no WhatsApp no seu ritmo.',
-      cta: 'Quero meu guia com desconto',
+      cta: 'Ver meu guia com desconto',
     },
     {
       type: 'name',
       id: 'primeiro_nome',
-      title: 'Para qual WhatsApp enviamos o seu guia?',
+      fields: 'name',
+      title: 'Como devemos chamar você no guia?',
       subtitle:
-        'O nome aparece no material. Usamos este número só para entregar o Guia Memórias Vivas e a vídeo-aula.',
-      cta: 'Receber meu guia no WhatsApp',
+        'Seu primeiro nome personaliza o material. Em seguida mostramos a condição liberada para você.',
+      cta: 'Ver minha oferta',
     },
     {
       type: 'loader',
@@ -276,6 +287,15 @@ export const memorias: QuizDefinition = {
       },
     },
     { type: 'offer', id: 'oferta' },
+    {
+      type: 'name',
+      id: 'whatsapp',
+      fields: 'phone',
+      title: 'Para qual WhatsApp enviamos o seu guia?',
+      subtitle:
+        'Usamos este número só para entregar o Guia Memórias Vivas e a vídeo-aula. Sem ligação e sem propaganda.',
+      cta: 'Receber meu guia no WhatsApp',
+    },
   ],
   compare: {
     title: 'O resgate das suas fotos está traçado',
@@ -284,7 +304,7 @@ export const memorias: QuizDefinition = {
     nowValue: 'Na gaveta',
     goalValue: 'Na família',
     nowDetail: 'Cores apagadas e marcas do tempo',
-    goalDetail: 'A mesma foto com cor, nitidez e um lugar no grupo',
+    goalDetail: 'A mesma foto com cor, nitidez e um lugar na memória',
     beforeImage: '/memorias/antes.jpg',
     afterImage: '/memorias/depois.jpg',
   },
