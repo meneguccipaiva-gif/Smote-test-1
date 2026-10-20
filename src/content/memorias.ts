@@ -53,12 +53,6 @@ function buildProfile(answers: Answers): Profile {
       : 'Guardar a história da família para filhos e netos.',
   ]
 
-  const peso = asString(answers, 'peso')
-  const pesoLinha: Record<string, string> = {
-    emocao: 'A primeira foto do guia é a que mais emociona. O passo a passo respeita o seu ritmo.',
-    medo: 'O passo a passo começa devagar, para o medo de errar não segurar a foto na gaveta.',
-    pressa: 'O caminho mais curto fica no começo do guia, sem etapa extra.',
-  }
   const foco = focoPorQuem[quem] ?? 'Um passo a passo para restaurar as fotos no WhatsApp, sem aplicativo novo.'
 
   return {
@@ -68,16 +62,15 @@ function buildProfile(answers: Answers): Profile {
     desafio: tipos.length > 0 ? tipos.join(', ') : 'Colorização, nitidez e correção de marcas',
     foco,
     leitura: `${foco} O que trava hoje é o estado da foto, não a sua capacidade de aprender o toque certo.`,
-    linhaOferta: pesoLinha[peso] ?? foco,
+    linhaOferta: foco,
     antes: antes.slice(0, 3),
     depois,
     card: [
       { label: 'Objetivo do resgate', value: objetivo[quem] ?? 'Preservar a história da família' },
       { label: 'Tipo de restauração', value: tipos.length > 0 ? tipos.join(', ') : 'Cor, nitidez e marcas do tempo' },
-      { label: 'Dificuldade', value: dificuldade[barreira] ?? 'Feito diretamente pelo WhatsApp' },
       {
-        label: 'Formato',
-        value: 'Guia em PDF e vídeo prático, passo a passo',
+        label: 'Preço por restauração',
+        value: 'Gratuito',
         highlight: true,
       },
     ],
@@ -223,14 +216,8 @@ export const memorias: QuizDefinition = {
       id: 'medidor',
       title: 'Detectamos que seu acervo familiar possui potencial de restauração de {percentual}%.',
       body: 'Mesmo fotos com mais de 50 anos podem recuperar cor e detalhe com um passo a passo simples.',
-      cta: 'Ver meu passo a passo de restauração',
-      image: '/memorias/transform-familia-color.jpg',
-    },
-    {
-      type: 'profile',
-      id: 'perfil',
-      image: '/memorias/profile-prova.jpg',
       cta: 'Ver o método',
+      image: '/memorias/transform-familia-color.jpg',
     },
     {
       type: 'method',
@@ -243,7 +230,7 @@ export const memorias: QuizDefinition = {
       steps: [
         {
           title: 'Receba o guia',
-          text: 'O PDF e a vídeo-aula chegam no seu WhatsApp depois da confirmação.',
+          text: 'O PDF e a vídeo-aula chegam no seu WhatsApp ou e-mail depois da confirmação.',
         },
         {
           title: 'Siga o toque na tela',
@@ -254,17 +241,7 @@ export const memorias: QuizDefinition = {
           text: 'A foto restaurada segue para o grupo, com a história de volta para filhos e netos.',
         },
       ],
-      cta: 'Ver condição do guia',
-    },
-    {
-      type: 'gift',
-      id: 'presente',
-      video: '/memorias/thumb2.mp4',
-      poster: '/memorias/transform-familia-color.jpg',
-      productTitle: 'Desconto liberado no Guia Memórias Vivas + vídeo-aula',
-      productBody:
-        'PDF em letras grandes e aula gravada na tela do celular, para você restaurar as fotos no WhatsApp no seu ritmo.',
-      cta: 'Ver meu guia com desconto',
+      cta: 'Acessar meu guia',
     },
     {
       type: 'name',
@@ -272,31 +249,28 @@ export const memorias: QuizDefinition = {
       fields: 'name',
       title: 'Como devemos chamar você no guia?',
       subtitle:
-        'Seu primeiro nome personaliza o material. Em seguida mostramos a condição liberada para você.',
+        'Seu primeiro nome personaliza o material. Em seguida mostramos a sua oferta.',
       cta: 'Ver minha oferta',
     },
     {
       type: 'loader',
       id: 'carregando',
       question: {
-        id: 'peso',
-        title: 'Quando você pensa em restaurar a primeira foto, o que pesa mais?',
+        id: 'canal_entrega',
+        title: 'Você prefere receber seu guia por e-mail ou WhatsApp?',
         options: [
-          { value: 'emocao', label: 'A emoção de ver de novo quem está na foto.' },
-          { value: 'medo', label: 'O medo de errar e estragar a lembrança.' },
-          { value: 'pressa', label: 'A pressa de mandar a foto pronta para a família.' },
+          { value: 'email', label: 'E-mail' },
+          { value: 'whatsapp', label: 'WhatsApp' },
         ],
       },
     },
     { type: 'offer', id: 'oferta' },
     {
       type: 'name',
-      id: 'whatsapp',
-      fields: 'phone',
-      title: 'Para qual WhatsApp enviamos o seu guia?',
-      subtitle:
-        'Usamos este número só para entregar o Guia Memórias Vivas e a vídeo-aula. Sem ligação e sem propaganda.',
-      cta: 'Receber meu guia no WhatsApp',
+      id: 'contato',
+      title: 'Para onde enviamos o seu guia?',
+      subtitle: 'Usamos este contato só para entregar o Guia Memórias Vivas e a vídeo-aula.',
+      cta: 'Receber meu guia',
     },
   ],
   compare: {
@@ -314,6 +288,8 @@ export const memorias: QuizDefinition = {
     diagnosisTitle: 'Seu Guia de Resgate de Memórias Familiares está pronto, {primeiro_nome}!',
     diagnosisSubtitle:
       'Com base no seu perfil, preparamos o caminho para devolver cor, nitidez e presença às fotos mais preciosas da sua história.',
+    video: '/memorias/thumb2.mp4',
+    videoPoster: '/memorias/transform-familia-color.jpg',
     hojeLabel: 'Hoje',
     depoisLabel: 'Com o método Memórias Vivas',
     highlight: 'Passo a passo no WhatsApp, sem sair de casa',
@@ -334,8 +310,8 @@ export const memorias: QuizDefinition = {
         text: 'Um jeito simples de organizar as fotos restauradas e enviar para filhos e netos sem perder qualidade.',
       },
       {
-        title: 'Entrega direta no WhatsApp',
-        text: 'O conteúdo chega no seu WhatsApp depois da confirmação, sem e-mail e sem senha.',
+        title: 'Entrega direta no WhatsApp ou e-mail',
+        text: 'O conteúdo chega no seu WhatsApp ou e-mail depois da confirmação, sem senha.',
       },
     ],
     guaranteeTitle: 'Garantia incondicional de 7 dias, lembrança protegida',
@@ -361,6 +337,6 @@ export const memorias: QuizDefinition = {
       },
     ],
     cta: 'Pagar R$ 37 e começar o resgate',
-    ctaSub: 'Faça o pagamento e receba seu guia no whatsapp.',
+    ctaSub: 'Faça o pagamento e receba seu guia.',
   },
 }

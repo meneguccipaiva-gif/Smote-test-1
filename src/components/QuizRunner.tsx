@@ -51,7 +51,10 @@ export function QuizRunner({ quiz }: Props) {
     const params = quizEventParams(quiz, faixa || undefined)
     trackQuiz(quiz.id, 'ViewContent', params)
     if (progress >= 50) trackQuiz(quiz.id, 'QuizMeio', params, { custom: true })
-    if (screen.type === 'profile') trackQuiz(quiz.id, 'QuizConcluido', params, { custom: true })
+    const hasProfileScreen = quiz.screens.some((item) => item.type === 'profile')
+    if (screen.type === 'profile' || (screen.type === 'meter' && !hasProfileScreen)) {
+      trackQuiz(quiz.id, 'QuizConcluido', params, { custom: true })
+    }
     if (screen.type === 'method') trackQuiz(quiz.id, 'MetodoVista', params, { custom: true })
     if (screen.type === 'name' && (screen.fields ?? 'both') !== 'name') {
       trackQuiz(quiz.id, 'FormWhatsappVista', params, { custom: true })
@@ -98,13 +101,19 @@ export function QuizRunner({ quiz }: Props) {
     }))
   }
 
-  async function sendLead(nome: string, whatsapp: string) {
+  async function sendLead(nome: string, whatsapp: string, email = '') {
     const result = await submitLead({
       produto: quiz.id,
       produto_nome: quiz.name,
       primeiro_nome: nome,
       whatsapp,
-      respostas: { ...state.answers, primeiro_nome: nome },
+      email: email || undefined,
+      respostas: {
+        ...state.answers,
+        primeiro_nome: nome,
+        whatsapp,
+        ...(email ? { email } : {}),
+      },
       perfil: {
         percentual: profile.percentual,
         nivel: profile.nivel,
@@ -121,7 +130,14 @@ export function QuizRunner({ quiz }: Props) {
     setState((current) => ({
       ...current,
       submitted: true,
-      answers: { ...current.answers, primeiro_nome: nome },
+      waitlist: true,
+      answers: {
+        ...current.answers,
+        primeiro_nome: nome,
+        whatsapp,
+        ...(email ? { email } : {}),
+        canal_entrega: email ? 'email' : asString(current.answers, 'canal_entrega') || 'whatsapp',
+      },
     }))
     return true
   }
@@ -241,6 +257,7 @@ export function QuizRunner({ quiz }: Props) {
     }
 
     if (screen.type === 'meter') {
+      const hasProfileScreen = quiz.screens.some((item) => item.type === 'profile')
       return (
         <ResultMeter
           title={screen.title}
@@ -249,6 +266,7 @@ export function QuizRunner({ quiz }: Props) {
           cta={screen.cta}
           image={screen.image ?? resultImage(quiz.id, profile.nivel)}
           profile={profile}
+          showSummary={!hasProfileScreen}
           onNext={goNext}
         />
       )
@@ -281,16 +299,36 @@ export function QuizRunner({ quiz }: Props) {
     }
 
     if (screen.type === 'name') {
-      const fields = screen.fields ?? 'both'
+      const canal = asString(state.answers, 'canal_entrega') === 'email' ? 'email' : 'whatsapp'
+      const fields =
+        screen.fields ??
+        (screen.id === 'contato' ? (canal === 'email' ? 'email' : 'phone') : 'both')
+      const isContact = fields === 'phone' || fields === 'email'
+      const contactCopy =
+        fields === 'email'
+          ? {
+              title: 'Para qual e-mail enviamos o seu guia?',
+              subtitle:
+                'Usamos este e-mail só para entregar o Guia Memórias Vivas e a vídeo-aula. Sem propaganda.',
+              cta: 'Receber meu guia no e-mail',
+            }
+          : {
+              title: 'Para qual WhatsApp enviamos o seu guia?',
+              subtitle:
+                'Usamos este número só para entregar o Guia Memórias Vivas e a vídeo-aula. Sem ligação e sem propaganda.',
+              cta: 'Receber meu guia no WhatsApp',
+            }
       return (
         <NameCapture
-          title={screen.title}
+          title={isContact ? contactCopy.title : screen.title}
           emphasis={screen.emphasis}
-          subtitle={screen.subtitle}
-          cta={screen.cta}
+          subtitle={isContact ? contactCopy.subtitle : screen.subtitle}
+          cta={isContact ? contactCopy.cta : screen.cta}
           fields={fields}
+          allowChannelSwitch={isContact}
           name={asString(state.answers, 'primeiro_nome')}
           phone={asString(state.answers, 'whatsapp')}
+          email={asString(state.answers, 'email')}
           onValidationError={() => {
             if (fields !== 'name') {
               trackQuiz(quiz.id, 'FormWhatsappErro', quizEventParams(quiz, faixa || undefined), {
@@ -298,25 +336,46 @@ export function QuizRunner({ quiz }: Props) {
               })
             }
           }}
-          onContinue={(nome, whatsapp) => {
+          onContinue={(nome, whatsapp, email) => {
             const params = quizEventParams(
               quiz,
               asString(state.answers, 'faixa_etaria') || undefined,
             )
             if (fields === 'name') {
               trackQuiz(quiz.id, 'NomeInformado', params, { custom: true })
-            } else {
-              trackQuiz(quiz.id, 'CompleteRegistration', params)
+              setState((current) => ({
+                ...current,
+                step: Math.min(current.step + 1, quiz.screens.length - 1),
+                answers: { ...current.answers, primeiro_nome: nome, whatsapp },
+              }))
+              return
             }
-            const openWaitlist = fields === 'phone'
-            setState((current) => ({
-              ...current,
-              step: openWaitlist
-                ? current.step
-                : Math.min(current.step + 1, quiz.screens.length - 1),
-              waitlist: openWaitlist ? true : current.waitlist,
-              answers: { ...current.answers, primeiro_nome: nome, whatsapp },
-            }))
+            trackQuiz(quiz.id, 'CompleteRegistration', params)
+            if (fields === 'both') {
+              setState((current) => ({
+                ...current,
+                step: Math.min(current.step + 1, quiz.screens.length - 1),
+                answers: { ...current.answers, primeiro_nome: nome, whatsapp },
+              }))
+              return
+            }
+            void (async () => {
+              const ok = await sendLead(nome, whatsapp, email)
+              if (!ok) {
+                setState((current) => ({
+                  ...current,
+                  waitlist: true,
+                  submitted: false,
+                  answers: {
+                    ...current.answers,
+                    primeiro_nome: nome,
+                    whatsapp,
+                    ...(email ? { email } : {}),
+                    canal_entrega: email ? 'email' : 'whatsapp',
+                  },
+                }))
+              }
+            })()
           }}
         />
       )

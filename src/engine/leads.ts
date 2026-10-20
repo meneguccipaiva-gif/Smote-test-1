@@ -5,6 +5,7 @@ export type LeadPayload = {
   produto_nome: string
   primeiro_nome: string
   whatsapp: string
+  email?: string
   respostas: Record<string, string | string[]>
   perfil: {
     percentual: number

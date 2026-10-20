@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { asString, fill, orderByAge, profileVars } from '../engine/answers'
 import { brl, PRICE } from '../content/price'
 import { Icon } from './Icon'
@@ -13,7 +14,7 @@ type Props = {
 
 const seals = [
   { icon: 'lock' as const, text: 'Pagamento 100% seguro' },
-  { icon: 'phone' as const, text: 'Acesso direto pelo WhatsApp, sem e-mail e sem senha' },
+  { icon: 'phone' as const, text: 'Acesso direto pelo WhatsApp ou e-mail. Sem precisar criar conta.' },
   { icon: 'bolt' as const, text: 'Liberação só depois da confirmação do pagamento' },
 ]
 
@@ -21,10 +22,32 @@ export function OfferPage({ compare, offer, profile, answers, onBuy }: Props) {
   const vars = profileVars(profile)
   const title = diagnosisTitle(offer.diagnosisTitle, profile.primeiro_nome, vars)
   const testimonials = orderByAge(offer.testimonials, asString(answers, 'faixa_etaria'))
+  const priceRef = useRef<HTMLElement>(null)
+  const [priceSeen, setPriceSeen] = useState(false)
+
+  useEffect(() => {
+    const node = priceRef.current
+    if (!node || priceSeen) return
+    let delayTimer = 0
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const ready = entries.some((entry) => entry.isIntersecting && entry.intersectionRatio >= 1)
+        if (!ready) return
+        observer.disconnect()
+        delayTimer = window.setTimeout(() => setPriceSeen(true), 450)
+      },
+      { threshold: 1, rootMargin: '0px 0px -40px 0px' },
+    )
+    observer.observe(node)
+    return () => {
+      observer.disconnect()
+      window.clearTimeout(delayTimer)
+    }
+  }, [priceSeen])
 
   return (
     <section className="screen">
-      <div className="screen-body offer">
+      <div className="screen-body offer is-scrollable">
         <section>
           <h1>{compare.title}</h1>
           <div className="compare">
@@ -56,7 +79,21 @@ export function OfferPage({ compare, offer, profile, answers, onBuy }: Props) {
           <p className="focus-line">{profile.linhaOferta || profile.foco}</p>
         </section>
 
-        <section className="price-card">
+        {offer.video && (
+          <div className="offer-video-frame">
+            <video
+              className="offer-video-inline"
+              src={offer.video}
+              poster={offer.videoPoster}
+              muted
+              autoPlay
+              loop
+              playsInline
+            />
+          </div>
+        )}
+
+        <section className="price-card" ref={priceRef}>
           <p className="kicker">Condição especial deste diagnóstico</p>
           <p className="price-from">De {brl(PRICE.from)}</p>
           <p className="price-now">{brl(PRICE.to)}</p>
@@ -121,12 +158,14 @@ export function OfferPage({ compare, offer, profile, answers, onBuy }: Props) {
           </ul>
         </section>
       </div>
-      <div className="dock">
-        <button type="button" className="btn" onClick={onBuy}>
-          {offer.cta}
-        </button>
-        <p className="fine">{offer.ctaSub}</p>
-      </div>
+      {priceSeen && (
+        <div className="dock dock-fade-in">
+          <button type="button" className="btn" onClick={onBuy}>
+            {offer.cta}
+          </button>
+          <p className="fine">{offer.ctaSub}</p>
+        </div>
+      )}
     </section>
   )
 }

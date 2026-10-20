@@ -3,11 +3,16 @@ create table if not exists public.leads (
   produto text not null,
   produto_nome text not null,
   primeiro_nome text not null,
-  whatsapp text not null,
+  whatsapp text not null default '',
+  email text,
   respostas jsonb not null,
   perfil jsonb not null,
   criado_em timestamptz not null default now()
 );
+
+-- Projetos já existentes: rode também
+-- alter table public.leads add column if not exists email text;
+-- alter table public.leads alter column whatsapp set default '';
 
 alter table public.leads enable row level security;
 

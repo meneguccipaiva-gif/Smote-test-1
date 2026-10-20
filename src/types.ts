@@ -108,7 +108,7 @@ export type Screen =
       emphasis?: string
       subtitle: string
       cta: string
-      fields?: 'name' | 'phone' | 'both'
+      fields?: 'name' | 'phone' | 'email' | 'both'
     }
   | {
       type: 'loader'
@@ -164,6 +164,8 @@ export type Deliverable = {
 export type OfferContent = {
   diagnosisTitle: string
   diagnosisSubtitle: string
+  video?: string
+  videoPoster?: string
   hojeLabel: string
   depoisLabel: string
   highlight: string

@@ -98,7 +98,7 @@ export function Loader({ lines, question, answer, proof, onAnswer, onDone }: Pro
         <div className="modal-backdrop">
           <div className="modal" role="dialog" aria-modal="true" aria-labelledby="loader-question-title">
             <h1 id="loader-question-title">{question.title}</h1>
-            <div className="stack">
+            <div className={question.options.length === 2 ? 'choice-pair' : 'stack'}>
               {question.options.map((option) => {
                 const isSelected = picked === option.value
                 return (
@@ -110,9 +110,11 @@ export function Loader({ lines, question, answer, proof, onAnswer, onDone }: Pro
                     onClick={() => setPicked(option.value)}
                   >
                     <span className="choice-label">{option.label}</span>
-                    <span className="choice-arrow" aria-hidden="true">
-                      →
-                    </span>
+                    {question.options.length !== 2 && (
+                      <span className="choice-arrow" aria-hidden="true">
+                        →
+                      </span>
+                    )}
                   </button>
                 )
               })}
