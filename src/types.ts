@@ -58,8 +58,10 @@ export type Screen =
       title: string
       emphasis?: string
       subtitle?: string
+      subtitleMark?: string
       layout?: 'rows' | 'chips' | 'tiles'
       skipLabel?: string
+      selectAllLabel?: string
       options: Option[]
       initial?: string[]
     }

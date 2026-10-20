@@ -148,7 +148,9 @@ export const memorias: QuizDefinition = {
       id: 'problemas',
       title: 'Qual é o maior problema das fotos antigas que você gostaria de recuperar?',
       subtitle: 'Pode selecionar mais de uma opção.',
+      subtitleMark: 'mais de uma opção',
       layout: 'tiles',
+      selectAllLabel: 'Todas acima',
       options: [
         {
           value: 'pb',

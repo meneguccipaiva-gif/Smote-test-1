@@ -198,8 +198,10 @@ export function QuizRunner({ quiz }: Props) {
           title={screen.title}
           emphasis={screen.emphasis}
           subtitle={screen.subtitle}
+          subtitleMark={screen.subtitleMark}
           layout={screen.layout}
           skipLabel={screen.skipLabel}
+          selectAllLabel={screen.selectAllLabel}
           options={screen.options}
           initial={screen.initial}
           value={Array.isArray(saved) ? saved : undefined}
