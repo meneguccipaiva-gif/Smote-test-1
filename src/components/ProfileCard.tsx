@@ -24,20 +24,18 @@ export function ProfileCard({ image, cta, profile, onNext }: Props) {
             ))}
           </div>
         </div>
-        <p className="reading-card">
-          <strong>{profile.nivel}</strong>
-          {profile.leitura}
-        </p>
-        <div className="summary-card">
+        <div className="profile-proof">
+          <img src={image} alt="" />
+        </div>
+        <div className="summary-card summary-card-full">
           <dl className="summary">
             {profile.card.map((row) => (
-              <div key={row.label}>
+              <div key={row.label} className={row.highlight ? 'is-highlight' : undefined}>
                 <dt>{row.label}</dt>
                 <dd>{row.value}</dd>
               </div>
             ))}
           </dl>
-          <img className="summary-photo" src={image} alt="" />
         </div>
       </div>
       <div className="dock">

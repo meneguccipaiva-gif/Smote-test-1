@@ -7,7 +7,7 @@ type Props = {
   title: string
   emphasis?: string
   subtitle?: string
-  layout?: 'rows' | 'chips'
+  layout?: 'rows' | 'chips' | 'tiles'
   skipLabel?: string
   options: Option[]
   value?: string[]
@@ -39,44 +39,79 @@ export function MultiChoice({
       <div className="screen-body">
         <Title text={title} emphasis={emphasis} />
         {subtitle && <p className="subtitle">{subtitle}</p>}
-        <div className={layout === 'chips' ? 'chip-cloud' : 'stack'} role="group" aria-label={title}>
-          {options.map((option) => {
-            const isSelected = selected.includes(option.value)
-            if (layout === 'chips') {
+        {layout === 'tiles' ? (
+          <div className="photo-grid" role="group" aria-label={title}>
+            {options.map((option) => {
+              const isSelected = selected.includes(option.value)
               return (
                 <button
                   key={option.value}
                   type="button"
-                  className={isSelected ? 'chip is-selected' : 'chip'}
+                  className={isSelected ? 'photo-card is-selected' : 'photo-card'}
                   aria-pressed={isSelected}
                   onClick={() => toggle(option.value)}
                 >
-                  <span>{option.label}</span>
-                  <span aria-hidden="true">{isSelected ? '✓' : '+'}</span>
+                  {option.image ? (
+                    <>
+                      <span className="photo-face is-cover">
+                        <img src={option.image} alt="" />
+                      </span>
+                      <span className="photo-caption">
+                        <span>{option.label}</span>
+                        <span aria-hidden="true">{isSelected ? '✓' : '+'}</span>
+                      </span>
+                    </>
+                  ) : (
+                    <span className="photo-plain">
+                      {option.icon && <Icon name={option.icon} size={24} />}
+                      <span>{option.label}</span>
+                      <span aria-hidden="true">{isSelected ? '✓' : '+'}</span>
+                    </span>
+                  )}
                 </button>
               )
-            }
-            return (
-              <button
-                key={option.value}
-                type="button"
-                className={isSelected ? 'choice-row is-selected' : 'choice-row'}
-                aria-pressed={isSelected}
-                onClick={() => toggle(option.value)}
-              >
-                {option.icon && (
-                  <span className="choice-emoji">
-                    <Icon name={option.icon} size={28} />
+            })}
+          </div>
+        ) : (
+          <div className={layout === 'chips' ? 'chip-cloud' : 'stack'} role="group" aria-label={title}>
+            {options.map((option) => {
+              const isSelected = selected.includes(option.value)
+              if (layout === 'chips') {
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    className={isSelected ? 'chip is-selected' : 'chip'}
+                    aria-pressed={isSelected}
+                    onClick={() => toggle(option.value)}
+                  >
+                    <span>{option.label}</span>
+                    <span aria-hidden="true">{isSelected ? '✓' : '+'}</span>
+                  </button>
+                )
+              }
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  className={isSelected ? 'choice-row is-selected' : 'choice-row'}
+                  aria-pressed={isSelected}
+                  onClick={() => toggle(option.value)}
+                >
+                  {option.icon && (
+                    <span className="choice-emoji">
+                      <Icon name={option.icon} size={28} />
+                    </span>
+                  )}
+                  <span className="choice-label">{option.label}</span>
+                  <span className={isSelected ? 'tick' : 'plus'} aria-hidden="true">
+                    {isSelected ? '✓' : '+'}
                   </span>
-                )}
-                <span className="choice-label">{option.label}</span>
-                <span className={isSelected ? 'tick' : 'plus'} aria-hidden="true">
-                  {isSelected ? '✓' : '+'}
-                </span>
-              </button>
-            )
-          })}
-        </div>
+                </button>
+              )
+            })}
+          </div>
+        )}
       </div>
       <div className="dock">
         <button type="button" className="btn" disabled={selected.length === 0} onClick={() => onContinue(selected)}>

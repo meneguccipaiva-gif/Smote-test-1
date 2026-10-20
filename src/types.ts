@@ -30,6 +30,14 @@ export type MethodStep = {
 
 export type Screen =
   | {
+      type: 'cover'
+      id: string
+      promise: string
+      cta: string
+      video: string
+      poster?: string
+    }
+  | {
       type: 'single'
       id: string
       title: string
@@ -45,7 +53,7 @@ export type Screen =
       title: string
       emphasis?: string
       subtitle?: string
-      layout?: 'rows' | 'chips'
+      layout?: 'rows' | 'chips' | 'tiles'
       skipLabel?: string
       options: Option[]
       initial?: string[]
@@ -67,6 +75,7 @@ export type Screen =
       emphasis?: string
       body: string
       cta: string
+      image?: string
     }
   | {
       type: 'profile'
@@ -79,6 +88,7 @@ export type Screen =
       id: string
       title: string
       emphasis?: string
+      kicker?: string
       intro: string
       image?: string
       steps: MethodStep[]
@@ -101,7 +111,15 @@ export type Screen =
         options: Option[]
       }
     }
-  | { type: 'gift'; id: string }
+  | {
+      type: 'gift'
+      id: string
+      video?: string
+      poster?: string
+      productTitle?: string
+      productBody?: string
+      cta?: string
+    }
   | { type: 'offer'; id: string }
 
 export type CompareContent = {
@@ -121,6 +139,7 @@ export type Answers = Record<string, string | string[]>
 export type CardRow = {
   label: string
   value: string
+  highlight?: boolean
 }
 
 export type Testimonial = {

@@ -296,6 +296,8 @@ h3 {
 .fine {
   margin-top: 8px;
   text-align: center;
+  font-size: 11.2px;
+  line-height: 1.4;
 }
 
 .center-copy { text-align: center; }
@@ -314,11 +316,14 @@ h3 {
 }
 
 .hero {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-  border-radius: var(--radius-card);
-  margin-bottom: 20px;
+  display: block;
+  width: calc(100% + 2 * var(--pad));
+  max-width: none;
+  height: auto;
+  margin: -8px calc(-1 * var(--pad)) 20px;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 0;
 }
 
 blockquote {
@@ -371,6 +376,20 @@ blockquote {
   line-height: 1.45;
 }
 
+.reassure-lock {
+  background: #fff6cc;
+  color: #5c4d00;
+}
+
+.reassure-lock .reassure-title {
+  color: #1e201f;
+}
+
+.reassure-brand-box {
+  background: #e8f1fb;
+  color: #2a4060;
+}
+
 .reassure-title {
   display: flex;
   align-items: center;
@@ -378,6 +397,22 @@ blockquote {
   margin-bottom: 6px;
   color: var(--text);
   font-weight: 800;
+}
+
+.reassure-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  color: var(--text);
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.reassure-brand img {
+  height: 22px;
+  width: auto;
+  object-fit: contain;
 }
 
 .error {
@@ -427,6 +462,10 @@ blockquote {
 }
 
 .summary div:first-child { border-top: 0; }
+
+.summary div.is-highlight {
+  background: #eef8f0;
+}
 
 .summary dt {
   color: var(--muted);
@@ -1181,6 +1220,25 @@ blockquote {
   background: var(--soft);
 }
 
+.summary-card-full {
+  display: block;
+  padding: 0;
+  overflow: hidden;
+}
+
+.summary-card-full .summary div {
+  padding: 14px 16px;
+}
+
+.summary-card-full .summary div.is-highlight {
+  margin: 0;
+  width: 100%;
+  box-sizing: border-box;
+  border-top: 2px solid var(--accent);
+  border-bottom: 2px solid var(--accent);
+  background: #eef8f0;
+}
+
 .summary-card .summary {
   flex: 1;
   margin-top: 0;
@@ -1198,6 +1256,22 @@ blockquote {
   align-self: center;
 }
 
+.profile-proof {
+  margin-top: 16px;
+  padding: 10px;
+  border-radius: 16px;
+  background: var(--soft);
+  overflow: hidden;
+}
+
+.profile-proof img {
+  display: block;
+  width: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+  aspect-ratio: 4 / 3;
+}
+
 :focus-visible {
   outline: 3px solid var(--text);
   outline-offset: 3px;
@@ -1207,8 +1281,122 @@ blockquote {
   to { transform: rotate(360deg); }
 }
 
+.cover-screen {
+  position: relative;
+  overflow: hidden;
+  color: white;
+}
+
+.cover-media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.cover-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cover-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.55) 0%,
+    rgba(0, 0, 0, 0.28) 40%,
+    rgba(0, 0, 0, 0.62) 100%
+  );
+}
+
+.cover-body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding-top: 28px;
+  padding-bottom: 12px;
+}
+
+.cover-brand {
+  display: block;
+  height: 22px;
+  width: auto;
+  margin: 18px auto 8px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+.cover-promise {
+  color: white;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.35);
+}
+
+.cover-dock {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+  box-shadow: none;
+  padding-bottom: 28px;
+}
+
+.btn-cover,
+.cover-dock .btn-cover {
+  background: #ffcc00;
+  color: #1e201f;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+.btn-cover:hover,
+.cover-dock .btn-cover:hover {
+  background: #f0c000;
+  color: #1e201f;
+}
+
+.gift-screen {
+  position: relative;
+}
+
+.gift-product {
+  margin-top: 16px;
+  max-width: 20em;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.gift-video-frame {
+  margin-top: 18px;
+  padding: 8px;
+  border-radius: 16px;
+  background: var(--soft);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.gift-video-inline {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: 12px;
+  background: #111;
+}
+
+.photo-grid .photo-caption span:first-child {
+  font-size: 13px;
+  line-height: 1.25;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   .ring { transition: none !important; animation: none !important; }
   .gift-layer.is-out { opacity: 0; }
+  .cover-video,
+  .gift-video-inline { display: none; }
 }

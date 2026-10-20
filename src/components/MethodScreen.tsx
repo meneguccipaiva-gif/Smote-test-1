@@ -8,6 +8,7 @@ type Step = {
 type Props = {
   title: string
   emphasis?: string
+  kicker?: string
   intro: string
   image?: string
   steps: Step[]
@@ -15,12 +16,21 @@ type Props = {
   onNext: () => void
 }
 
-export function MethodScreen({ title, emphasis, intro, image, steps, cta, onNext }: Props) {
+export function MethodScreen({
+  title,
+  emphasis,
+  kicker = 'O método',
+  intro,
+  image,
+  steps,
+  cta,
+  onNext,
+}: Props) {
   return (
     <section className="screen">
       <div className="screen-body">
         {image && <img className="hero" src={image} alt="" />}
-        <p className="kicker">O método</p>
+        <p className="kicker">{kicker}</p>
         <Title text={title} emphasis={emphasis} />
         <p className="subtitle">{intro}</p>
         <ol className="steps">

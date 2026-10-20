@@ -5,6 +5,11 @@ type Props = {
   open: boolean
   onOpen: () => void
   onNext: () => void
+  video?: string
+  poster?: string
+  productTitle?: string
+  productBody?: string
+  cta?: string
 }
 
 type Phase = 'idle' | 'opening' | 'handoff' | 'shown'
@@ -12,7 +17,16 @@ type Phase = 'idle' | 'opening' | 'handoff' | 'shown'
 const LID_MS = 560
 const FADE_MS = 520
 
-export function GiftReveal({ open, onOpen, onNext }: Props) {
+export function GiftReveal({
+  open,
+  onOpen,
+  onNext,
+  video,
+  poster,
+  productTitle,
+  productBody,
+  cta = 'Resgatar meu plano com desconto',
+}: Props) {
   const [phase, setPhase] = useState<Phase>(open ? 'shown' : 'idle')
   const onOpenRef = useRef(onOpen)
   const percentRef = useRef<HTMLElement>(null)
@@ -70,7 +84,7 @@ export function GiftReveal({ open, onOpen, onNext }: Props) {
   }, [phase])
 
   return (
-    <section className="screen">
+    <section className="screen gift-screen">
       <div className="screen-body center-copy">
         <div className="gift-stage">
           {showGift && (
@@ -91,7 +105,9 @@ export function GiftReveal({ open, onOpen, onNext }: Props) {
           {showBadge && (
             <div className={phase === 'handoff' ? 'gift-layer is-in' : 'gift-layer'}>
               <h1>Seu desconto foi liberado</h1>
-              <p className="subtitle">A condição promocional deste diagnóstico já está aplicada.</p>
+              <p className="subtitle">
+                {productTitle ?? 'A condição promocional deste diagnóstico já está aplicada.'}
+              </p>
               <div
                 className={phase === 'handoff' ? 'gift-badge is-in' : 'gift-badge'}
                 aria-live="polite"
@@ -99,6 +115,20 @@ export function GiftReveal({ open, onOpen, onNext }: Props) {
                 <strong ref={percentRef}>{PRICE.percent}%</strong>
                 <span ref={captionRef}>de desconto liberado</span>
               </div>
+              {productBody && <p className="gift-product">{productBody}</p>}
+              {video && (
+                <div className="gift-video-frame">
+                  <video
+                    className="gift-video-inline"
+                    src={video}
+                    poster={poster}
+                    muted
+                    autoPlay
+                    loop
+                    playsInline
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -106,7 +136,7 @@ export function GiftReveal({ open, onOpen, onNext }: Props) {
       {showBadge && (
         <div className={phase === 'handoff' ? 'dock is-in' : 'dock'}>
           <button type="button" className="btn" onClick={onNext}>
-            Resgatar meu plano com desconto
+            {cta}
           </button>
         </div>
       )}

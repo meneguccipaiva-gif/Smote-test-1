@@ -12,11 +12,21 @@ type Props = {
   name?: string
   phone?: string
   onContinue: (name: string, whatsapp: string) => void
+  onValidationError?: () => void
 }
 
 const NAME_PATTERN = /^[A-Za-zÀ-ÖØ-öø-ÿ]{2,}(?:[ '-][A-Za-zÀ-ÖØ-öø-ÿ]+)?$/
 
-export function NameCapture({ title, emphasis, subtitle, cta, name: initialName, phone: initialPhone, onContinue }: Props) {
+export function NameCapture({
+  title,
+  emphasis,
+  subtitle,
+  cta,
+  name: initialName,
+  phone: initialPhone,
+  onContinue,
+  onValidationError,
+}: Props) {
   const [name, setName] = useState(initialName ?? '')
   const [phone, setPhone] = useState(initialPhone ? maskPhone(initialPhone) : '')
   const [error, setError] = useState('')
@@ -27,10 +37,12 @@ export function NameCapture({ title, emphasis, subtitle, cta, name: initialName,
   function submit() {
     if (!nameOk) {
       setError('Escreva seu primeiro nome, só com letras.')
+      onValidationError?.()
       return
     }
     if (!phoneOk) {
       setError('Digite um WhatsApp com DDD.')
+      onValidationError?.()
       return
     }
     onContinue(clean, onlyDigits(phone))
@@ -73,12 +85,22 @@ export function NameCapture({ title, emphasis, subtitle, cta, name: initialName,
             }}
           />
         </label>
-        <aside className="reassure">
+        <aside className="reassure reassure-lock">
           <p className="reassure-title">
             <Icon name="lock" size={18} />
-            Pedimos seu nome e WhatsApp para entregar o plano
+            Seu WhatsApp serve só para enviar o material
           </p>
-          <p>Sem e-mail e sem senha. O aviso do seu acesso chega direto no WhatsApp.</p>
+          <p>
+            Sem ligação, sem grupo e sem propaganda. Seus dados não são vendidos. Usamos este número
+            exclusivamente para entregar o seu guia.
+          </p>
+        </aside>
+        <aside className="reassure reassure-brand-box">
+          <div className="reassure-brand">
+            <img src="/brand/clube-antenados.png" alt="" />
+            <span>Clube de Antenados</span>
+          </div>
+          <p>Somos uma empresa de soluções de educação para pessoas maduras.</p>
         </aside>
         {error && (
           <p className="error" role="alert">

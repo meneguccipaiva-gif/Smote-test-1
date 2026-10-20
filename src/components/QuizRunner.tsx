@@ -6,6 +6,7 @@ import { PRICE } from '../content/price'
 import { resultImage } from '../content/resultImage'
 import { loadSession, saveSession } from '../engine/session'
 import type { QuizDefinition, SessionState } from '../types'
+import { CoverScreen } from './CoverScreen'
 import { GiftReveal } from './GiftReveal'
 import { Interstitial } from './Interstitial'
 import { Loader } from './Loader'
@@ -20,6 +21,7 @@ import { SingleChoice } from './SingleChoice'
 import { Waitlist } from './Waitlist'
 
 const questionTypes = new Set(['single', 'multi', 'name'])
+const countedQuestionTypes = new Set(['single', 'multi'])
 const RING_MS = 1400
 
 type Props = {
@@ -50,6 +52,8 @@ export function QuizRunner({ quiz }: Props) {
     trackQuiz(quiz.id, 'ViewContent', params)
     if (progress >= 50) trackQuiz(quiz.id, 'QuizMeio', params, { custom: true })
     if (screen.type === 'profile') trackQuiz(quiz.id, 'QuizConcluido', params, { custom: true })
+    if (screen.type === 'method') trackQuiz(quiz.id, 'MetodoVista', params, { custom: true })
+    if (screen.type === 'name') trackQuiz(quiz.id, 'FormWhatsappVista', params, { custom: true })
     if (state.giftOpen) trackQuiz(quiz.id, 'PresenteAberto', params, { custom: true })
     if (screen.type === 'offer' && !state.waitlist) trackQuiz(quiz.id, 'OfertaVista', params, { custom: true })
   }, [faixa, progress, quiz, screen.type, state.giftOpen, state.waitlist])
@@ -59,6 +63,14 @@ export function QuizRunner({ quiz }: Props) {
     const timer = window.setTimeout(() => setRingFor(null), RING_MS)
     return () => window.clearTimeout(timer)
   }, [ringFor])
+
+  function trackQuestionAnswer(screenId: string) {
+    const params = quizEventParams(quiz, faixa || undefined)
+    const questions = quiz.screens.filter((item) => countedQuestionTypes.has(item.type))
+    const index = questions.findIndex((item) => item.id === screenId)
+    if (index === 0) trackQuiz(quiz.id, 'Pergunta1', params, { custom: true })
+    if (index === 1) trackQuiz(quiz.id, 'Pergunta2', params, { custom: true })
+  }
 
   function goNext() {
     const next = quiz.screens[Math.min(state.step + 1, quiz.screens.length - 1)]
@@ -112,14 +124,18 @@ export function QuizRunner({ quiz }: Props) {
     return true
   }
 
+  const hideChrome = screen.type === 'cover'
+
   return (
     <div className="frame">
       <div className="column">
-        <ProgressHeader
-          canBack={state.step > 0 || state.waitlist}
-          onBack={goBack}
-          progress={showBar ? progress : null}
-        />
+        {!hideChrome && (
+          <ProgressHeader
+            canBack={state.step > 0 || state.waitlist}
+            onBack={goBack}
+            progress={showBar ? progress : null}
+          />
+        )}
         <div className="stage" key={state.waitlist ? 'lista' : screen.id}>
           {state.waitlist ? (
             <Waitlist
@@ -137,6 +153,18 @@ export function QuizRunner({ quiz }: Props) {
   )
 
   function renderScreen() {
+    if (screen.type === 'cover') {
+      return (
+        <CoverScreen
+          promise={screen.promise}
+          cta={screen.cta}
+          video={screen.video}
+          poster={screen.poster}
+          onStart={goNext}
+        />
+      )
+    }
+
     if (screen.type === 'single') {
       const saved = asString(state.answers, screen.id)
       return (
@@ -147,7 +175,10 @@ export function QuizRunner({ quiz }: Props) {
           note={screen.note}
           options={screen.options}
           value={saved || undefined}
-          onSelect={(value) => setAnswer(screen.id, value)}
+          onSelect={(value) => {
+            trackQuestionAnswer(screen.id)
+            setAnswer(screen.id, value)
+          }}
           onNext={goNext}
         />
       )
@@ -166,6 +197,7 @@ export function QuizRunner({ quiz }: Props) {
           initial={screen.initial}
           value={Array.isArray(saved) ? saved : undefined}
           onContinue={(value) => {
+            trackQuestionAnswer(screen.id)
             setAnswer(screen.id, value)
             goNext()
           }}
@@ -206,7 +238,7 @@ export function QuizRunner({ quiz }: Props) {
           emphasis={screen.emphasis}
           body={screen.body}
           cta={screen.cta}
-          image={resultImage(quiz.id, profile.nivel)}
+          image={screen.image ?? resultImage(quiz.id, profile.nivel)}
           profile={profile}
           onNext={goNext}
         />
@@ -216,7 +248,7 @@ export function QuizRunner({ quiz }: Props) {
     if (screen.type === 'profile') {
       return (
         <ProfileCard
-          image={resultImage(quiz.id, profile.nivel)}
+          image={screen.image || resultImage(quiz.id, profile.nivel)}
           cta={screen.cta}
           profile={profile}
           onNext={goNext}
@@ -229,6 +261,7 @@ export function QuizRunner({ quiz }: Props) {
         <MethodScreen
           title={screen.title}
           emphasis={screen.emphasis}
+          kicker={screen.kicker}
           intro={screen.intro}
           image={screen.image}
           steps={screen.steps}
@@ -247,6 +280,11 @@ export function QuizRunner({ quiz }: Props) {
           cta={screen.cta}
           name={asString(state.answers, 'primeiro_nome')}
           phone={asString(state.answers, 'whatsapp')}
+          onValidationError={() => {
+            trackQuiz(quiz.id, 'FormWhatsappErro', quizEventParams(quiz, faixa || undefined), {
+              custom: true,
+            })
+          }}
           onContinue={(nome, whatsapp) => {
             trackQuiz(
               quiz.id,
@@ -289,6 +327,11 @@ export function QuizRunner({ quiz }: Props) {
           open={state.giftOpen}
           onOpen={() => setState((current) => ({ ...current, giftOpen: true }))}
           onNext={goNext}
+          video={screen.video}
+          poster={screen.poster}
+          productTitle={screen.productTitle}
+          productBody={screen.productBody}
+          cta={screen.cta}
         />
       )
     }

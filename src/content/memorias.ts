@@ -1,6 +1,5 @@
 import { asArray, asString, firstName } from '../engine/answers'
 import type { Answers, Profile, QuizDefinition } from '../types'
-import { ageOptions } from './ages'
 
 const problemaLinha: Record<string, string> = {
   pb: 'Fotos em preto e branco que você gostaria de ver coloridas.',
@@ -76,7 +75,11 @@ function buildProfile(answers: Answers): Profile {
       { label: 'Objetivo do resgate', value: objetivo[quem] ?? 'Preservar a história da família' },
       { label: 'Tipo de restauração', value: tipos.length > 0 ? tipos.join(', ') : 'Cor, nitidez e marcas do tempo' },
       { label: 'Dificuldade', value: dificuldade[barreira] ?? 'Feito diretamente pelo WhatsApp' },
-      { label: 'Formato', value: 'Guia em PDF e vídeo prático, passo a passo' },
+      {
+        label: 'Formato',
+        value: 'Guia em PDF e vídeo prático, passo a passo',
+        highlight: true,
+      },
     ],
     loaderLines: [
       'Analisando o perfil do seu acervo de fotos...',
@@ -91,38 +94,43 @@ export const memorias: QuizDefinition = {
   id: 'memorias',
   path: 'memorias',
   name: 'Memórias Vivas',
-  promise: 'Aprender a restaurar fotos antigas da família pelo WhatsApp.',
+  promise: 'Aprenda a restaurar suas fotos antigas',
   buildProfile,
   screens: [
     {
-      type: 'single',
-      id: 'faixa_etaria',
-      title: 'Diagnóstico do Acervo e Memórias de Família',
-      subtitle: 'Selecione a sua faixa de idade para adaptarmos as orientações de resgate das fotos.',
-      note: 'Ao continuar, você recebe este diagnóstico no seu ritmo.',
-      options: ageOptions,
+      type: 'cover',
+      id: 'capa',
+      promise: 'Aprenda a restaurar suas fotos antigas',
+      cta: 'Começar diagnóstico do acervo',
+      video: '/memorias/thumb.mp4',
+      poster: '/memorias/transform-familia-color.jpg',
     },
     {
       type: 'single',
       id: 'acervo',
       title: 'Onde estão guardadas as fotos antigas da sua família hoje?',
-      subtitle: 'Isso nos ajuda a entender o estado do seu acervo.',
+      subtitle: 'Toque na opção que mais parece com o seu acervo.',
       options: [
-        { value: 'albuns', label: 'Guardadas em álbuns de papel antigos.', icon: 'photo' },
-        { value: 'caixas', label: 'Guardadas em caixas, gavetas ou envelopes.', icon: 'photo' },
-        { value: 'celular', label: 'Algumas já estão no celular, mas ficaram desbotadas ou escuras.', icon: 'phone' },
-        { value: 'mistura', label: 'Um pouco de cada.', icon: 'users' },
-      ],
-    },
-    {
-      type: 'interstitial',
-      id: 'prova_social',
-      icon: 'users',
-      title: 'Mais de 1.800 famílias já resgataram fotos',
-      image: '/memorias/social.jpg',
-      paragraphs: [
-        'Elas devolveram cor a fotos de casamentos, infância e entes queridos.',
-        'A história da sua família merece continuar viva para as próximas gerações.',
+        {
+          value: 'albuns',
+          label: 'Álbuns de papel',
+          image: '/memorias/acervo-albuns.jpg',
+        },
+        {
+          value: 'caixas',
+          label: 'Caixas ou gavetas',
+          image: '/memorias/acervo-caixas.jpg',
+        },
+        {
+          value: 'celular',
+          label: 'Já no celular',
+          image: '/memorias/acervo-celular.jpg',
+        },
+        {
+          value: 'mistura',
+          label: 'Um pouco de cada',
+          image: '/memorias/acervo-mistura.jpg',
+        },
       ],
     },
     {
@@ -130,21 +138,39 @@ export const memorias: QuizDefinition = {
       id: 'problemas',
       title: 'Qual é o maior problema das fotos antigas que você gostaria de recuperar?',
       subtitle: 'Pode selecionar mais de uma opção.',
+      layout: 'tiles',
       options: [
-        { value: 'pb', label: 'Fotos em preto e branco que eu gostaria de ver coloridas.' },
-        { value: 'desbotadas', label: 'Fotos amareladas, escuras ou desbotadas pelo tempo.' },
-        { value: 'manchas', label: 'Fotos manchadas, rasgadas ou com marcas de dobra.' },
-        { value: 'embaçadas', label: 'Fotos embaçadas, em que o rosto das pessoas ficou sem nitidez.' },
+        {
+          value: 'pb',
+          label: 'Preto e branco para colorir',
+          image: '/memorias/problema-pb.jpg',
+        },
+        {
+          value: 'desbotadas',
+          label: 'Amareladas ou desbotadas',
+          image: '/memorias/problema-desbotada.jpg',
+        },
+        {
+          value: 'manchas',
+          label: 'Manchas, rasgos ou dobras',
+          image: '/memorias/problema-manchas.jpg',
+        },
+        {
+          value: 'embaçadas',
+          label: 'Rosto sem nitidez',
+          image: '/memorias/problema-embacada.jpg',
+        },
       ],
     },
     {
       type: 'interstitial',
-      id: 'reforco',
-      icon: 'spark',
-      title: 'Que preciosidade',
-      image: '/memorias/reforco.jpg',
+      id: 'prova_social',
+      icon: 'users',
+      title: 'Mais de 1.800 famílias já resgataram fotos',
+      image: '/memorias/transform-familia-casa.jpg',
       paragraphs: [
-        'Mesmo rasgadas ou em preto e branco, essas fotos podem ser trabalhadas num passo a passo do WhatsApp, no seu ritmo, sem baixar aplicativo novo.',
+        'Elas devolveram cor a fotos de casamentos, infância e entes queridos.',
+        'A história da sua família merece continuar viva para as próximas gerações.',
       ],
     },
     {
@@ -164,7 +190,7 @@ export const memorias: QuizDefinition = {
       icon: 'photo',
       kicker: 'Você sabia?',
       title: 'Não precisa de computador',
-      image: '/memorias/pilula.jpg',
+      image: '/memorias/transform-pais-filho.jpg',
       paragraphs: [
         'Você não precisa de computador, scanner ou aplicativo caro. Dá para aprender, no próprio WhatsApp, um passo a passo para devolver cor e nitidez a uma foto antiga.',
       ],
@@ -186,32 +212,55 @@ export const memorias: QuizDefinition = {
       title: 'Detectamos que seu acervo familiar possui potencial de restauração de {percentual}%.',
       body: 'Mesmo fotos com mais de 50 anos podem recuperar cor e detalhe com um passo a passo simples.',
       cta: 'Ver meu passo a passo de restauração',
+      image: '/memorias/transform-familia-color.jpg',
     },
     {
       type: 'profile',
       id: 'perfil',
-      image: '/memorias/social.jpg',
+      image: '/memorias/profile-prova.jpg',
       cta: 'Ver o método',
     },
     {
       type: 'method',
       id: 'metodo',
-      title: 'Três passos para a foto voltar à família',
-      intro: 'Você aprende no WhatsApp. Não há aplicativo novo nem scanner.',
-      image: '/memorias/social.jpg',
+      title: 'O Guia Memórias Vivas',
+      kicker: 'Como você vai aprender?',
+      intro:
+        'É um PDF ilustrado em letras grandes + vídeo-aula mostrando onde apertar no WhatsApp. Sem aplicativo novo, sem scanner, sem computador. Sem pagar nada por restauração.',
+      image: '/memorias/capa-produto.jpg',
       steps: [
-        { title: 'Escolher a foto', text: 'A primeira é a que mais faz falta: pais, casamento, filhos ou o acervo inteiro.' },
-        { title: 'Seguir o toque', text: 'O guia mostra onde apertar, com letra grande, para devolver cor e nitidez.' },
-        { title: 'Enviar para a família', text: 'A foto restaurada segue para o grupo, sem perder a história no caminho.' },
+        {
+          title: 'Receba o guia',
+          text: 'O PDF e a vídeo-aula chegam no seu WhatsApp depois da confirmação.',
+        },
+        {
+          title: 'Siga o toque na tela',
+          text: 'O guia mostra exatamente onde apertar para devolver cor e nitidez à foto. E você não paga nada por isso.',
+        },
+        {
+          title: 'Envie para a família',
+          text: 'A foto restaurada segue para o grupo, com a história de volta para filhos e netos.',
+        },
       ],
-      cta: 'Continuar',
+      cta: 'Ver condição do guia',
+    },
+    {
+      type: 'gift',
+      id: 'presente',
+      video: '/memorias/thumb2.mp4',
+      poster: '/memorias/transform-familia-color.jpg',
+      productTitle: 'Desconto liberado no Guia Memórias Vivas + vídeo-aula',
+      productBody:
+        'PDF em letras grandes e aula gravada na tela do celular, para você restaurar as fotos no WhatsApp no seu ritmo.',
+      cta: 'Quero meu guia com desconto',
     },
     {
       type: 'name',
       id: 'primeiro_nome',
-      title: 'Onde enviamos o seu acesso?',
-      subtitle: 'O nome aparece no guia. O passo a passo só chega neste WhatsApp depois do pagamento.',
-      cta: 'Gerar guia Memórias Vivas',
+      title: 'Para qual WhatsApp enviamos o seu guia?',
+      subtitle:
+        'O nome aparece no material. Usamos este número só para entregar o Guia Memórias Vivas e a vídeo-aula.',
+      cta: 'Receber meu guia no WhatsApp',
     },
     {
       type: 'loader',
@@ -226,7 +275,6 @@ export const memorias: QuizDefinition = {
         ],
       },
     },
-    { type: 'gift', id: 'presente' },
     { type: 'offer', id: 'oferta' },
   ],
   compare: {
@@ -291,6 +339,6 @@ export const memorias: QuizDefinition = {
       },
     ],
     cta: 'Pagar R$ 37 e começar o resgate',
-    ctaSub: 'O material só é liberado depois da confirmação do pagamento.',
+    ctaSub: 'Faça o pagamento e receba seu guia no whatsapp.',
   },
 }
